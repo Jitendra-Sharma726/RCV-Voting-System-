@@ -1,0 +1,56 @@
+import sqlite3
+
+DB_FILE = "ballots.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS ballots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ranking TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def add_ballot(ranking):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    ranking_str = ",".join(ranking)
+    c.execute("INSERT INTO ballots (ranking) VALUES (?)", (ranking_str,))
+    conn.commit()
+    conn.close()
+
+def fetch_ballots():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT ranking FROM ballots")
+    rows = c.fetchall()
+    conn.close()
+    return [row[0].split(",") for row in rows]
+
+def get_ballots_from_user():
+    print("Welcome to the RCV Vote Counter Simulator!")
+    print("Enter ranked ballots (comma-separated). Type 'done' to finish.\n")
+
+    while True:
+        entry = input("Ballot: ").strip()
+        if entry.lower() == "done":
+            break
+        if entry:
+            ranking = [name.strip() for name in entry.split(",") if name.strip()]
+            if ranking:
+                add_ballot(ranking)
+            else:
+                print("Invalid ballot. Please enter at least one candidate.")
+
+def main():
+    init_db()
+    get_ballots_from_user()
+    ballots = fetch_ballots()
+
+    print(ballots)
+
+if __name__ == "__main__":
+    main()
