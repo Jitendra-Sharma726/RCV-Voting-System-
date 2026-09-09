@@ -1,0 +1,30 @@
+def count_first_choices(ballots):
+    """Count how many times each candidate appears as the first choice."""
+    first_choice_counts = {}
+    for ballot in ballots:
+        if ballot:  # ensure it's not an empty ballot
+            first = ballot[0]
+            if first in first_choice_counts:
+                first_choice_counts[first] += 1
+            else:
+                first_choice_counts[first] = 1
+    return first_choice_counts
+
+
+def main():
+    ballots = [
+        ["A", "B"],
+        ["A", "B"],
+        ["B", "A"],
+        ["C", "A"],
+        ["C", "B"]
+    ]
+
+    result = count_first_choices(ballots)
+    print("First choice counts:")
+    for candidate, count in result.items():
+        print(f"{candidate}: {count}")
+
+
+if __name__ == "__main__":
+    main()
