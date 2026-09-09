@@ -1,0 +1,40 @@
+RCV Vote Counter - 3
+We have now learned how to implement the RCV algorithm, but previously we were using hard-coded ballots data. In this component we will use SQLite to store and retrieve our data from a database, making our simulator more robust and persistent.
+SQLite is a lightweight, serverless SQL database engine that stores data in a single file on disk. It’s ideal for small to medium-sized applications and for prototyping, because:
+In our Python RCV simulator, we’ll use the built-in sqlite3 module to:
+
+Initialize the database (create the table)
+Insert new ballots
+Fetch stored ballots for counting
+Functions to Implement
+
+1. init_db()
+
+Purpose: ensure the ballots table exists
+Schema: It should have id(Set to autoincrement) and ranking
+Implementation Requirements:
+Connect to DB_FILE
+Execute the CREATE TABLE IF NOT EXISTS statement exactly on the table name ballots
+Commit and close the connection
+2. add_ballot(ranking: List[str])
+
+Purpose: insert a user’s ranked ballot into the database
+Behavior:
+Accepts a Python list of candidate names, e.g. ["Alice", "Bob", "Charlie"]
+Joins them into a comma-separated string "Alice,Bob,Charlie"
+Inserts that string into the ballots.ranking column
+Implementation Requirements:
+Open a connection to DB_FILE
+Use a parameterized INSERT INTO query to insert ranking.
+Pass the joined string as a single parameter
+Commit and close the connection
+3. fetch_ballots() -> List[List[str]]
+
+Purpose: retrieve all stored ballots and convert them back into Python lists
+Behavior:
+Query SELECT ranking FROM ballots
+For each row, split the stored string on commas
+Return a list of these lists, e.g. [["Alice","Bob","Charlie"], ["X","Y"], …]
+Implementation Requirements:
+Open and close the connection properly
+Must split on ","—not on spaces or any other delimiter
