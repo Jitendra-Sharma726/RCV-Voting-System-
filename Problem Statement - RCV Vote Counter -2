@@ -1,0 +1,39 @@
+RCV Vote Counter - 2
+You are given two files: main.py and rcv_core.py. The ballots are provided in rcv_core.py.
+
+Task To Do
+You need to complete the calculate_rcv_winner() function. Given a list of ballots, write the main logic to determine the winner using Ranked Choice Voting (RCV). If no winner is found, return None.
+
+Sample Cases
+Example 1 – Winner in Round 1
+
+Ballots:
+1. Alice, Bob, Charlie  
+2. Alice, Charlie, Bob  
+3. Alice, Bob, Charlie  
+4. Bob, Alice, Charlie  
+5. Charlie, Alice, Bob
+First-choice votes: Alice (3), Bob (1), Charlie (1)
+Alice wins with 60% (3 out of 5 votes)
+Example 2 – Tie with No Winner
+
+Ballots:
+1. Alice, Bob, Charlie  
+2. Bob, Charlie, Alice  
+3. Charlie, Bob, Alice  
+4. Bob, Alice, Charlie  
+5. Charlie, Alice, Bob  
+6. Alice, Charlie, Bob
+First-choice votes: Alice (2), Bob (2), Charlie (2)
+All are tied for the fewest votes → all are eliminated → ❌ No winner
+Example 3 – Multi-Round Elimination
+
+Ballots:
+1. Alice, Bob, Charlie  
+2. Bob, Alice, Charlie  
+3. Charlie, Bob, Alice  
+4. Bob, Charlie, Alice  
+5. Charlie, Alice, Bob
+Round 1: Alice (1), Bob (2), Charlie (2) → eliminate Alice
+Redistribute Alice’s vote to Bob → Bob (3), Charlie (2)
+Bob wins with 60% (3 out of 5 votes)
