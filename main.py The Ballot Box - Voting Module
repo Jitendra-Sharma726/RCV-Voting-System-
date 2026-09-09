@@ -1,0 +1,99 @@
+from flask import Flask, render_template, request, redirect, url_for, flash
+
+app = Flask(__name__)
+# A secret key is still needed for Flask's flash messaging system, even without user sessions.
+app.secret_key = 'your_strong_secret_key_here_replace_me_with_a_real_one' 
+
+# In-memory storage for candidates and votes
+CANDIDATES = ["Alice Smith", "Bob Johnson", "Charlie Brown", "Diana Miller", "Eve Davis"] 
+VOTES = [] 
+
+# --- Routes ---
+
+@app.route('/')
+def home():
+    """
+    The home page of the application. For this independent voting module,
+    we simply redirect to the voting page.
+    """
+    return redirect(url_for('vote'))
+
+@app.route('/vote', methods=['GET', 'POST'])
+def vote():
+    """
+    Handles the display and submission of the ranked-choice voting form.
+
+    GET Request:
+        Displays the voting form with all available candidates.
+    
+    POST Request:
+        Processes the submitted vote with updated validation rules:
+        1. Extracts user preferences from the form.
+        2. Validates:
+            - First preference is mandatory and valid.
+            - All submitted preferences (optional or not) are valid candidates.
+            - All submitted preferences are unique.
+        3. If valid, stores the vote in the in-memory VOTES list.
+        4. Renders the confirmation page, showing the user their specific preferences.
+        5. If invalid, re-renders the voting form with an error message.
+    """
+    if request.method == 'POST':
+        user_preferences = {} # To store the ordered preferences for the current vote
+        submitted_candidates_set = set() # To track candidates chosen to check for duplicates
+        error = None # To store any validation error message
+
+        # Validate the first preference (mandatory)
+        first_pref_candidate = request.form.get('pref1')
+        if not first_pref_candidate:
+            error = "Your 1st preference is mandatory. Please select a candidate."
+        elif first_pref_candidate not in CANDIDATES:
+            error = f"Invalid candidate '{first_pref_candidate}' selected for 1st Preference. Please choose from the list."
+        else:
+            # If first preference is valid, add it.
+            user_preferences["1. Preference"] = first_pref_candidate
+            submitted_candidates_set.add(first_pref_candidate)
+
+        # Only proceed if no error was found with the first preference
+        if not error:
+            for i in range(2, len(CANDIDATES) + 1):
+                pref_key = f'pref{i}' # e.g., 'pref2', 'pref3', etc.
+                candidate_selected = request.form.get(pref_key)
+
+                # If an optional preference was selected:
+                if candidate_selected:
+                    # Validate validity: Check if the selected candidate is actually in the predefined CANDIDATES list.
+                    if candidate_selected not in CANDIDATES:
+                        error = f"Invalid candidate '{candidate_selected}' selected for {i}. Preference. Please choose from the list."
+                        break # Exit loop as validation failed
+                    
+                    # Validate uniqueness: Check if the selected candidate has already been chosen for another preference.
+                    if candidate_selected in submitted_candidates_set:
+                        error = f"Duplicate preference detected: '{candidate_selected}'. Each selected candidate must be unique."
+                        break # Exit loop as validation failed
+
+                    # If valid, add it to preferences and tracking set
+                    user_preferences[f"{i}. Preference"] = candidate_selected
+                    submitted_candidates_set.add(candidate_selected)
+                # If candidate_selected is empty, it's an optional preference not filled, which is allowed. Do nothing.
+        
+        if error:
+            # If there's an error, re-render the vote form with the error message
+            # The 'error' variable is passed to the template.
+            return render_template('vote.html', candidates=CANDIDATES, error=error)
+        
+        else:
+            # If validation passes (no error):
+            # Store the 'user_preferences' in the global 'VOTES' list.
+            # Note: user_preferences will only contain the ranks actually selected by the user.
+            VOTES.append(user_preferences)
+            
+            # Render the 'voted_confirmation.html' template directly, passing the 'user_preferences'.
+            return render_template('voted_confirmation.html', user_vote=user_preferences)
+
+    # This block handles GET requests (initial load of the voting page)
+    # or cases where a POST request didn't return (e.g., initial load after error redirect).
+    return render_template('vote.html', candidates=CANDIDATES)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
